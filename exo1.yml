@@ -6,7 +6,7 @@ info:
 paths:
   /ping:
     get:
-      summary: Vérifie si le serveur est vivant
+      summary: Vérifie si le serveur marche
       responses:
         '200':
           description: OK

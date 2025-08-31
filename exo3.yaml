@@ -146,4 +146,3 @@ components:
         error:
           type: string
           example: Ressource introuvable
-git

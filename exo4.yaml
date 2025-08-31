@@ -1,0 +1,69 @@
+openapi: 3.0.3
+info:
+  title: Product Management API
+  version: 1.0.0
+
+paths:
+  /products:
+    get:
+      summary: Obtenir la liste des produits
+      description: Retourne une liste de produits qu'on peut filtrer et limiter
+      tags:
+        - Products
+      parameters:
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/q"
+      responses:
+        "200":
+          description: Liste des produits
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+              examples:
+                multiple_products:
+                  summary: Exemple avec plusieurs produits
+                  value:
+                    - name: salade
+                      expiration_datetime: "2025-09-30T00:00:00Z"
+                      price: 6
+                    - name: Pain
+                      expiration_datetime: "2025-09-20T00:00:00Z"
+                      price: 10
+                empty_list:
+                  summary: Exemple avec liste vide
+                  value: []
+
+components:
+  parameters:
+    limit:
+      name: limit
+      in: query
+      description: Nombre maximum de produits à retourner
+      required: false
+      schema:
+        type: integer
+        example: 7
+    q:
+      name: q
+      in: query
+      description: Terme de recherche pour filtrer les produits
+      required: false
+      schema:
+        type: string
+        example: chocolat
+
+  schemas:
+    Product:
+      type: object
+      properties:
+        name:
+          type: string
+        expiration_datetime:
+          type: string
+          format: date-time
+        price:
+          type: number
+          format: float

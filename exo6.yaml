@@ -1,0 +1,313 @@
+openapi: "3.0.3"
+info:
+  title: Users API
+  version: "1.0"
+servers:
+  - url: http://localhost:8000
+
+tags:
+  - name: Users
+    description: Manage user profiles
+
+components:
+  parameters:
+    UserIdParam:
+      name: id
+      in: path
+      required: true
+      description: Unique user identifier
+      schema:
+        type: string
+        example: "usr_001"
+
+  schemas:
+    PersonalInfo:
+      type: object
+      properties:
+        first_name:
+          type: string
+          example: "Tiana"
+        last_name:
+          type: string
+          example: "Rakotomalala"
+        birthdate:
+          type: string
+          format: date
+          example: "2006-03-15"
+        email:
+          type: string
+          format: email
+          example: "tiana.rakotomalala@gmail.com"
+      required: [first_name, last_name, birthdate, email]
+
+    Address:
+      type: object
+      properties:
+        address_street:
+          type: string
+          example: "Lot 12 Ambodivona"
+        address_city:
+          type: string
+          example: "Antananarivo"
+        address_country:
+          type: string
+          example: "MG"
+        address_postal_code:
+          type: string
+          example: "101"
+      required: [address_street, address_city, address_country, address_postal_code]
+
+    Preferences:
+      type: object
+      properties:
+        needs_newsletter:
+          type: boolean
+          example: true
+        language:
+          type: string
+          enum: [mg, fr, eng]
+          example: mg
+      required: [needs_newsletter, language]
+
+    CreateUserProfile:
+      allOf:
+        - $ref: "#/components/schemas/PersonalInfo"
+        - $ref: "#/components/schemas/Address"
+        - $ref: "#/components/schemas/Preferences"
+
+    UserProfile:
+      allOf:
+        - $ref: "#/components/schemas/PersonalInfo"
+        - $ref: "#/components/schemas/Address"
+        - $ref: "#/components/schemas/Preferences"
+        - type: object
+          properties:
+            identifier:
+              type: string
+              example: "usr_0001"
+      description: Full user profile with server-generated identifier
+      example:
+        identifier: "usr_0001"
+        first_name: "Tiana"
+        last_name: "Rakotomalala"
+        birthdate: "2006-03-15"
+        email: "tiana.rakotomalala@gmail.com"
+        address_street: "Lot 12 Ambodivona"
+        address_city: "Antananarivo"
+        address_country: "MG"
+        address_postal_code: "101"
+        needs_newsletter: true
+        language: mg
+
+paths:
+  /users/{id}:
+    parameters:
+      - $ref: "#/components/parameters/UserIdParam"
+    get:
+      tags: [Users]
+      summary: Get a user with all information
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+
+  /users:
+    post:
+      tags: [Users]
+      summary: Create a list of users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/CreateUserProfile"
+            examples:
+              newUsers:
+                summary: Example of new users
+                value:
+                  - first_name: "Hery"
+                    last_name: "Andrianarisoa"
+                    birthdate: "2005-07-20"
+                    email: "hery.andrianarisoa@gmail.com"
+                    address_street: "Rue 5 Ankorondrano"
+                    address_city: "Antananarivo"
+                    address_country: "MG"
+                    address_postal_code: "101"
+                    needs_newsletter: true
+                    language: fr
+                  - first_name: "Lalao"
+                    last_name: "Rakotonirina"
+                    birthdate: "2004-11-12"
+                    email: "lalao.rakotonirina@gmail.com"
+                    address_street: "Lot 45 Ambohibao"
+                    address_city: "Antsirabe"
+                    address_country: "MG"
+                    address_postal_code: "110"
+                    needs_newsletter: false
+                    language: mg
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UserProfile"
+              examples:
+                createdUsers:
+                  summary: Example response
+                  value:
+                    - identifier: "usr_0002"
+                      first_name: "Hery"
+                      last_name: "Andrianarisoa"
+                      birthdate: "2005-07-20"
+                      email: "hery.andrianarisoa@gmail.com"
+                      address_street: "Rue 5 Ankorondrano"
+                      address_city: "Antananarivo"
+                      address_country: "MG"
+                      address_postal_code: "101"
+                      needs_newsletter: true
+                      language: fr
+                    - identifier: "usr_0003"
+                      first_name: "Lalao"
+                      last_name: "Rakotonirina"
+                      birthdate: "2004-11-12"
+                      email: "lalao.rakotonirina@gmail.com"
+                      address_street: "Lot 45 Ambohibao"
+                      address_city: "Antsirabe"
+                      address_country: "MG"
+                      address_postal_code: "110"
+                      needs_newsletter: false
+                      language: mg
+
+  /users/{id}/personalInfo:
+    parameters:
+      - $ref: "#/components/parameters/UserIdParam"
+    put:
+      tags: [Users]
+      summary: Update only the personal information of a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PersonalInfo"
+            examples:
+              updateInfo:
+                summary: Update personal info example
+                value:
+                  first_name: "Mickael"
+                  last_name: "Rajaonarison"
+                  birthdate: "2007-05-11"
+                  email: "mickael.rajaonarison@gmail.com"
+      responses:
+        "200":
+          description: Updated (returns full user profile)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+              examples:
+                updatedUser:
+                  summary: Full profile after update
+                  value:
+                    identifier: "usr_12345"
+                    first_name: "Mickael"
+                    last_name: "Rajaonarison"
+                    birthdate: "2007-05-11"
+                    email: "mickael.rajaonarison@gmail.com"
+                    address_street: "Lot 12 Ambodivona"
+                    address_city: "Antananarivo"
+                    address_country: "MG"
+                    address_postal_code: "101"
+                    needs_newsletter: true
+                    language: fr
+
+  /users/{id}/address:
+    parameters:
+      - $ref: "#/components/parameters/UserIdParam"
+    put:
+      tags: [Users]
+      summary: Update only the address of a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Address"
+            examples:
+              updateAddress:
+                summary: Update address example
+                value:
+                  address_street: "Lot II K 23"
+                  address_city: "Fianarantsoa"
+                  address_country: "MG"
+                  address_postal_code: "301"
+      responses:
+        "200":
+          description: Updated (returns full user profile)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+              examples:
+                updatedUserAddress:
+                  summary: Full profile after address update
+                  value:
+                    identifier: "usr_98765"
+                    first_name: "Rina"
+                    last_name: "Andrianasolo"
+                    birthdate: "2006-01-20"
+                    email: "rina.andrianasolo@gmail.com"
+                    address_street: "Lot II K 23"
+                    address_city: "Fianarantsoa"
+                    address_country: "MG"
+                    address_postal_code: "301"
+                    needs_newsletter: false
+                    language: mg
+
+  /users/{id}/preferences:
+    parameters:
+      - $ref: "#/components/parameters/UserIdParam"
+    put:
+      tags: [Users]
+      summary: Update only the preferences of a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Preferences"
+            examples:
+              updatePreferences:
+                summary: Update preferences example
+                value:
+                  needs_newsletter: true
+                  language: fr
+      responses:
+        "200":
+          description: Updated (returns full user profile)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+              examples:
+                updatedUserPreferences:
+                  summary: Full profile after preferences update
+                  value:
+                    identifier: "usr_12345"
+                    first_name: "Mickael"
+                    last_name: "Rajaonarison"
+                    birthdate: "2007-05-11"
+                    email: "mickael.rajaonarison@gmail.com"
+                    address_street: "Lot 12 Ambodivona"
+                    address_city: "Antananarivo"
+                    address_country: "MG"
+                    address_postal_code: "101"
+                    needs_newsletter:

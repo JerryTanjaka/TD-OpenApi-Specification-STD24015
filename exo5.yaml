@@ -1,0 +1,148 @@
+openapi: "3.0.3"
+info:
+  title: API with Auth
+  version: "1.0"
+
+tags:
+  - name: Products
+    description: Operations related to products
+  - name: Orders
+    description: Operations related to orders
+
+paths:
+  /products:
+    get:
+      tags:
+        - Products
+      summary: Get all products
+      responses:
+        "200":
+          description: List of products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+              examples:
+                sampleProducts:
+                  summary: Example product list
+                  value:
+                    - name: "Riz"
+                      expiration_datetime: "2025-12-31"
+                      price: 2500.0
+                    - name: "Savon"
+                      expiration_datetime: "2026-05-20"
+                      price: 1500.0
+
+  /orders:
+    get:
+      tags:
+        - Orders
+      summary: Get paginated list of orders
+      parameters:
+        - $ref: "#/components/parameters/PageParam"
+        - $ref: "#/components/parameters/SizeParam"
+      responses:
+        "200":
+          description: List of orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Order"
+              examples:
+                sampleOrders:
+                  summary: Example order list
+                  value:
+                    - identifier: 1
+                      customer_name: "Rakoto"
+                      creation_datetime: "2025-08-25"
+                      total_amount: 10000.0
+                    - identifier: 2
+                      customer_name: "Rabe"
+                      creation_datetime: "2025-08-26"
+                      total_amount: 5000.0
+
+    post:
+      tags:
+        - Orders
+      summary: Create a new order (requires Basic Auth)
+      security:
+        - BasicAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Order"
+            examples:
+              createOrder:
+                summary: Example order creation
+                value:
+                  customer_name: "Jerry"
+                  creation_datetime: "2025-08-27"
+                  total_amount: 12000.5
+      responses:
+        "201":
+          description: Order created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+              examples:
+                createdOrder:
+                  summary: Example response
+                  value:
+                    identifier: 3
+                    customer_name: "Jerry"
+                    creation_datetime: "2025-08-27"
+                    total_amount: 12000.5
+
+components:
+  parameters:
+    PageParam:
+      name: page
+      in: query
+      schema:
+        type: integer
+      example: 1
+    SizeParam:
+      name: size
+      in: query
+      schema:
+        type: integer
+      example: 10
+
+  schemas:
+    Product:
+      type: object
+      properties:
+        name:
+          type: string
+        expiration_datetime:
+          type: string
+          format: date
+        price:
+          type: number
+          format: float
+
+    Order:
+      type: object
+      properties:
+        identifier:
+          type: integer
+        customer_name:
+          type: string
+        creation_datetime:
+          type: string
+          format: date
+        total_amount:
+          type: number
+          format: float
+
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
